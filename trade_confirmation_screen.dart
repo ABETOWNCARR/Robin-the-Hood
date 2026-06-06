@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// Trade execution is not available until Robinhood opens a public trading API.
+/// This screen is preserved for future use but currently unreachable from the UI.
+/// To re-enable: wire it back up from AgentControlsScreen and PatternApiService
+/// once the Robinhood API is available.
 class TradeConfirmationScreen extends StatelessWidget {
   final String ticker;
   final String action;
@@ -15,47 +19,35 @@ class TradeConfirmationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Confirm Trade")),
+      appBar: AppBar(title: const Text('Auto-Trading Unavailable')),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
+            const SizedBox(height: 24),
             const Text(
-              "⚠️ IMPORTANT DISCLAIMER",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
+              'Auto-Trading Coming Soon',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             const Text(
-              "This is an educational app. We do not provide financial advice. "
-              "Trading involves significant risk of loss. You are solely responsible for any trades executed. "
-              "Robin the Hood and its developers are not liable for any financial losses.",
-              style: TextStyle(fontSize: 14),
+              'Automatic trade execution will be available once Robinhood '
+              'provides a public trading API.\n\n'
+              'In the meantime, Robin the Hood will alert you when patterns '
+              'are detected so you can place trades manually.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 15, height: 1.6),
             ),
-            const SizedBox(height: 30),
-            Text(
-              "You are about to ${action.toUpperCase()} $quantity shares of $ticker",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const Spacer(),
+            const SizedBox(height: 32),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                minimumSize: const Size(double.infinity, 55),
-              ),
-              onPressed: () {
-                // TODO: Call backend execute_trade endpoint
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Trade request sent (demo mode)")),
-                );
-              },
-              child: const Text("I Understand the Risks — Confirm Trade"),
-            ),
-            const SizedBox(height: 12),
-            TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 52),
+              ),
+              child: const Text('Go Back'),
             ),
           ],
         ),
