@@ -1,40 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'firebase_options.dart';
 
-import 'services/notification_service.dart';
-import 'screens/disclaimer_screen.dart';
-import 'screens/dashboard_screen.dart';
-import 'screens/scanner_screen.dart';
-import 'screens/agent_controls_screen.dart';
-import 'screens/settings_screen.dart';
-
-@pragma('vm:entry-point')
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-}
-
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await NotificationService.initialize();
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-  runApp(const RobinTheHoodApp());
+  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  runApp(const MyApp());
 }
 
-class RobinTheHoodApp extends StatelessWidget {
-  const RobinTheHoodApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Robin the Hood',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.green, useMaterial3: true),
-      home: const AppInitializer(),
+      title: 'Trading Dashboard',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: const MyHomePage(),
     );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Trading Dashboard'),
+      ),
+      body: const Center(
+        child: Text('Firebase is connected!'),
+      ),
+    );
+  }
+}    );
   }
 }
 
