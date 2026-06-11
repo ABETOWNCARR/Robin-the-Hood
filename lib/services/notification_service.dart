@@ -14,7 +14,7 @@ class NotificationService {
     );
 
     await _localNotifications.initialize(
-      initSettings,
+      initializationSettings: initSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         print("Notification tapped: ${response.payload}");
       },
@@ -49,10 +49,10 @@ class NotificationService {
     );
 
     await _localNotifications.show(
-      DateTime.now().millisecond,
-      'Pattern Detected: $ticker',
-      message,
-      notificationDetails,
+      id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+      title: 'Pattern Detected: $ticker',
+      body: message,
+      notificationDetails: notificationDetails,
       payload: ticker,
     );
   }
