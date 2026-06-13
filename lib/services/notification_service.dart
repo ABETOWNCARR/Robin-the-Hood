@@ -6,16 +6,23 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
+  static int _notificationId = 0;
+
   static Future<void> initialize() async {
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
+    const DarwinInitializationSettings darwinSettings =
+        DarwinInitializationSettings();
+
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
+      iOS: darwinSettings,
+      macOS: darwinSettings,
     );
 
     await _localNotifications.initialize(
-      initSettings,
+      settings: initSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         if (kDebugMode) {
           debugPrint("Notification tapped: ${response.payload}");
@@ -23,22 +30,33 @@ class NotificationService {
       },
     );
 
-    await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    try {
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        _showFirebaseNotification(message);
+      });
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      _showFirebaseNotification(message);
-    });
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        if (kDebugMode) {
+          debugPrint(
+              "App opened from notification: ${message.notification?.title}");
+        }
+      });
+    } catch (_) {
+      // Firebase isn't configured (e.g. missing google-services.json) —
+      // local notifications still work, push just won't.
+    }
+  }
 
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      if (kDebugMode) {
-        debugPrint(
-            "App opened from notification: ${message.notification?.title}");
-      }
-    });
+  static Future<void> requestPermission() async {
+    try {
+      await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    } catch (_) {
+      // Firebase isn't configured — nothing to request.
+    }
   }
 
   static Future<void> showPatternAlert(String ticker, String message) async {
@@ -51,15 +69,19 @@ class NotificationService {
       priority: Priority.high,
     );
 
+    const DarwinNotificationDetails darwinDetails = DarwinNotificationDetails();
+
     const NotificationDetails notificationDetails = NotificationDetails(
       android: androidDetails,
+      iOS: darwinDetails,
+      macOS: darwinDetails,
     );
 
     await _localNotifications.show(
-      DateTime.now().millisecondsSinceEpoch.remainder(2147483647),
-      'Pattern Detected: $ticker',
-      message,
-      notificationDetails,
+      id: _notificationId++,
+      title: 'Pattern Detected: $ticker',
+      body: message,
+      notificationDetails: notificationDetails,
       payload: ticker,
     );
   }
@@ -74,6 +96,11 @@ class NotificationService {
   }
 
   static Future<String?> getFcmToken() async {
-    return await FirebaseMessaging.instance.getToken();
+    try {
+      return await FirebaseMessaging.instance.getToken();
+    } catch (_) {
+      // Firebase isn't configured — scans can still run without a token.
+      return null;
+    }
   }
 }
